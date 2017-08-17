@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Sites monitor</title>
+    <link rel="stylesheet" href="{% static 'css/dataTable/jquery.dataTables.min.css' %}">
+</head>
+<body>
+
+<h1 align="center">Web Sites</h1>
+<table id="websites" class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>URL</th>
+        <th>Create Date</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tfoot>
+    <tr>
+        <th>ID</th>
+        <th>URL</th>
+        <th>Create Date</th>
+        <th>Status</th>
+    </tr>
+    </tfoot>
+</table>
+
+
+<script src="{% static 'js/jQuery/jquery-2.2.3.min.js' %}"></script>
+<script src="{% static 'js/dataTable/jquery.dataTables.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        var table = $('#websites').DataTable({
+              responsive: false,
+              sPaginationType: "full_numbers", //type of pagination
+              bfilter: true,
+              bPaginate: true, //pagination
+              bSort: true,
+              bProcessing: true,//Text processing when child records a lot
+              bInfo: true,//Show results information
+              "iDisplayLength": 10, //Pagination
+              "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], //show entries
+              bServerSide: true,
+              "ajax": {
+                  "url": "{% url "api-monitoring-list" %}",
+                  "data": function (d) {
+                      d.start_date = $('#start_date').val();
+                      d.end_date = $('#end_date').val();
+                      d.status = $('#status').val();
+                      d.url = $('#url').val();
+                  }
+              }
+          });
+    });
+</script>
+</body>
+</html>
