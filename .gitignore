@@ -1,0 +1,5 @@
+*.pyc
+.idea/
+media/
+file-monitoring.csv
+debug.log

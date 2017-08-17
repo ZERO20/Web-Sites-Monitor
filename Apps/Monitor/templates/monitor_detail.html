@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Websites monitor</title>
+</head>
+<body>
+
+    <h1>Hello!</h1>
+    <h2 id="status_txt">The site <span id="site">{{ configuration_act.0.url }}</span> is <span id="avaliable"> </span></h2>
+    <h3 id="error_txt"></h3>
+    <script src="{% static 'js/jQuery/jquery-2.2.3.min.js' %}"></script>
+    <script>
+        var frequency = '{{ configuration_act.0.frequency | default:""}}';
+        var avaliable_txt = $('#avaliable');
+        var site_txt = $('#site');
+
+        $(document).ready(function () {
+            if (frequency) {
+                setInterval(function () {
+                    $.ajax({
+                        url: '{% url "check-web-site-status" %}',
+                        success: function (response) {
+                            console.log(response);
+                            if(!response.error){
+                                $('#error_txt').html('').hide();
+                                site_txt.text(response.site);
+                                avaliable_txt.text(response.status);
+                                frequency = response.freq_val * 1000;
+                                $('#status_txt').show();
+                            }
+                            else{
+                                $('#status_txt').hide();
+                                $('#error_txt').html(response.msg).show();
+                            }
+                        }
+                    });
+                }, frequency * 1000);
+            }
+            else {
+                $('#error_txt').html('Please add a configuration and refresh the page.').show();
+            }
+        });
+    </script>
+</body>
+</html>
