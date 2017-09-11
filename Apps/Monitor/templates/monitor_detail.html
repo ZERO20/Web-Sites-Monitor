@@ -8,40 +8,38 @@
 <body>
 
     <h1>Hello!</h1>
-    <h2 id="status_txt">The site <span id="site">{{ configuration_act.0.url }}</span> is <span id="avaliable"> </span></h2>
-    <h3 id="error_txt"></h3>
+    <h2 id="web_site_status">The website to verify: {{ configuration_act.0.url | default:"Not configured" }} </h2>
     <script src="{% static 'js/jQuery/jquery-2.2.3.min.js' %}"></script>
     <script>
         var frequency = '{{ configuration_act.0.frequency | default:""}}';
-        var avaliable_txt = $('#avaliable');
-        var site_txt = $('#site');
+        var web_site_text = $('#web_site_status');
 
         $(document).ready(function () {
-            if (frequency) {
-                setInterval(function () {
+            checkWebSite(frequency);
+        });
+
+        function checkWebSite(freq) {
+            if(freq){
+                setTimeout(function () {
                     $.ajax({
                         url: '{% url "check-web-site-status" %}',
                         success: function (response) {
                             console.log(response);
-                            if(!response.error){
-                                $('#error_txt').html('').hide();
-                                site_txt.text(response.site);
-                                avaliable_txt.text(response.status);
-                                frequency = response.freq_val * 1000;
-                                $('#status_txt').show();
-                            }
-                            else{
-                                $('#status_txt').hide();
-                                $('#error_txt').html(response.msg).show();
-                            }
+                            web_site_text.html("The website " + response.site + " is <span style=\"color:" + (response.status == 'UP' ? 'green' : 'red' ) + ";font-weight:bold\" >" + response.status + "</span>");
+                            checkWebSite(response.freq_val);
+                        },
+                        error: function(xmlhttprequest, textstatus, message) {
+                            console.log(xmlhttprequest.responseJSON);
+                            web_site_text.html('A error ocurred: '+ xmlhttprequest.responseJSON.msg);
+                            checkWebSite(freq);
                         }
                     });
-                }, frequency * 1000);
+                }, freq * 1000)
             }
-            else {
-                $('#error_txt').html('Please add a configuration and refresh the page.').show();
+            else{
+                $('#web_site_status').html('Please add a configuration and refresh the page.').show();
             }
-        });
+        }
     </script>
 </body>
 </html>

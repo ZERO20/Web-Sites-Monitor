@@ -3,3 +3,4 @@
 media/
 file-monitoring.csv
 debug.log
+*.sqlite3

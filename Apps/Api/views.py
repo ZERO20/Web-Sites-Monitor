@@ -7,36 +7,33 @@ import csv
 import datetime
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.db.models import Q
+from rest_framework import status
 
 class CheckWebSiteStatus(APIView):
 
     def get(self,request):
         data = {}
-        status = ''
         try:
             config = Configuration.objects.all()
-            r = requests.get(config.first().url, timeout= config.first().frequency)
-            data['error'] = False
             data['freq_val'] = config.first().frequency
             data['site'] = config.first().url
-
-            if r.status_code == 200:
-                data['avaliable']= True
-                data['status'] = 'UP'
-                status = 'UP'
-            else:
-                data['avaliable'] = False
-                data['status'] = 'DOWN'
-                status = 'DOWN'
-
-            monitoring_reg = Monitoring.objects.create(status = status, url = config.first().url)
-            writer = csv.writer(open('file-monitoring.csv','a'))
-            writer.writerow([datetime.datetime.now().timestamp(), status, config.first().url], )
         except Exception as error:
             data['error'] = True
             data['msg'] = str(error)
-        return Response(data)
+            return Response(data, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        try:
+            data['status'] = 'DOWN'
+            r = requests.get(data['site'], timeout= data['freq_val'])
+            if r.status_code == 200:
+                data['status'] = 'UP'
+        except Exception as e:
+            pass
+
+        #monitoring_reg = Monitoring.objects.create(status=data['status'], url=data['site'])
+        writer = csv.writer(open('file-monitoring.csv','a'))
+        writer.writerow([datetime.datetime.now().timestamp(), data['status'], data['site']],)
+        return Response(data, status= status.HTTP_200_OK)
 
 
 class ApiMonitoringList(BaseDatatableView):
