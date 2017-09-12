@@ -31,8 +31,9 @@ class CheckWebSiteStatus(APIView):
             pass
 
         #monitoring_reg = Monitoring.objects.create(status=data['status'], url=data['site'])
-        writer = csv.writer(open('file-monitoring.csv','a'))
-        writer.writerow([datetime.datetime.now().timestamp(), data['status'], data['site']],)
+        with open('file-monitoring.csv','a') as file:
+            writer = csv.writer(file)
+            writer.writerow([datetime.datetime.now().timestamp(), data['status'], data['site']],)
         return Response(data, status= status.HTTP_200_OK)
 
 
